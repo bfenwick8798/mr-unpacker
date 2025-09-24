@@ -89,5 +89,52 @@ def download_modloader(meta: dict, dotminecraftpath: str):
     elif meta['type'] == 'neoforge':
         print("Neoforge is not currently supported! Skipping modloader installation.")
     return modLoaderJarPath
+
+# Minecraft Launcher Profile Management (copilot made ts im sorry it's too annoying)
+import uuid
+from datetime import datetime
+from typing import Optional
+
+def load_launcher_profiles(minecraft_path: str):
+    """Load the launcher_profiles.json file from the provided .minecraft directory"""
+    launcher_path = os.path.join(minecraft_path, "launcher_profiles.json")
+    
+    if not os.path.exists(launcher_path):
+        raise FileNotFoundError(f"launcher_profiles.json not found in {minecraft_path}")
+    
+    with open(launcher_path, 'r', encoding='utf-8') as f:
+        return parse.load(f)
+
+def save_launcher_profiles(profiles_data: dict, minecraft_path: str):
+    """Save the launcher profiles data back to file"""
+    launcher_path = os.path.join(minecraft_path, "launcher_profiles.json")
+    
+    with open(launcher_path, 'w', encoding='utf-8') as f:
+        parse.dump(profiles_data, f, indent=2)
+
+def add_modpack_profile(profiles_data: dict, profile_name: str, minecraft_version: str, 
+                       modloader_version: str, game_dir: str, icon_base64: Optional[str] = None):
+    """Add a new modpack profile to launcher profiles"""
+    profile_id = str(uuid.uuid4())
+    current_time = datetime.now().isoformat() + "Z"
+    
+    new_profile = {
+        "name": profile_name,
+        "type": "custom",
+        "created": current_time,
+        "lastUsed": current_time,
+        "lastVersionId": modloader_version,
+        "gameDir": game_dir
+    }
+    
+    if icon_base64:
+        new_profile["icon"] = icon_base64
+    
+    if "profiles" not in profiles_data:
+        profiles_data["profiles"] = {}
+    
+    profiles_data["profiles"][profile_id] = new_profile
+    return profile_id
+
 if __name__ == "__main__":
     raise NotImplementedError("this is a library. you cant run it directly")
