@@ -89,23 +89,46 @@ def check_modloader(deps: dict):
     return result
 
 def download_modloader(meta: dict, dotminecraftpath: str):
-    """Download and install modloader (currently limited support)"""
-    if dotminecraftpath == "" or None: 
+    """Download and install modloader"""
+    if dotminecraftpath == "" or dotminecraftpath is None: 
         raise ValueError("installpath not provided")
     modLoaderJarPath = None
     if meta['type'] == 'fabric':
         print(f"Installing Fabric {meta['version']}")
         download("https://maven.fabricmc.net/net/fabricmc/fabric-installer/1.1.0/fabric-installer-1.1.0.jar", ".tmp/fabric_installer.jar")
         try: 
-            subprocess.run(f"java -jar .tmp/fabric_installer.jar client -mcversion {meta['minecraft']} -loader {meta['version']} -dir {dotminecraftpath}")
+            subprocess.run(f"java -jar .tmp/fabric_installer.jar client -mcversion {meta['minecraft']} -loader {meta['version']} -dir {dotminecraftpath}", shell=True, check=True)
         except Exception as e:
+            print(f"Failed to install Fabric: {e}")
             return e
     elif meta['type'] == 'forge':
-        print("Forge is not currently supported! Skipping modloader installation.")
-    elif meta['type'] == 'quilt-loader':
-        print("Quilt loader is not currently supported! Skipping modloader installation.")
+        print(f"Installing Forge {meta['version']} for Minecraft {meta['minecraft']}")
+        # Forge installer URL format: https://maven.minecraftforge.net/net/minecraftforge/forge/{mc_version}-{forge_version}/forge-{mc_version}-{forge_version}-installer.jar
+        forge_url = f"https://maven.minecraftforge.net/net/minecraftforge/forge/{meta['minecraft']}-{meta['version']}/forge-{meta['minecraft']}-{meta['version']}-installer.jar"
+        try:
+            download(forge_url, ".tmp/forge_installer.jar")
+            subprocess.run(f"java -jar .tmp/forge_installer.jar --installClient --installDir {dotminecraftpath}", shell=True, check=True)
+        except Exception as e:
+            print(f"Failed to install Forge: {e}")
+            return e
+    elif meta['type'] == 'quilt':
+        print(f"Installing Quilt {meta['version']}")
+        download("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/1.0.0/quilt-installer-1.0.0.jar", ".tmp/quilt_installer.jar")
+        try:
+            subprocess.run(f"java -jar .tmp/quilt_installer.jar install client {meta['minecraft']} {meta['version']} --install-dir={dotminecraftpath}", shell=True, check=True)
+        except Exception as e:
+            print(f"Failed to install Quilt: {e}")
+            return e
     elif meta['type'] == 'neoforge':
-        print("Neoforge is not currently supported! Skipping modloader installation.")
+        print(f"Installing NeoForge {meta['version']}")
+        # NeoForge installer URL format: https://maven.neoforged.net/releases/net/neoforged/neoforge/{version}/neoforge-{version}-installer.jar
+        neoforge_url = f"https://maven.neoforged.net/releases/net/neoforged/neoforge/{meta['version']}/neoforge-{meta['version']}-installer.jar"
+        try:
+            download(neoforge_url, ".tmp/neoforge_installer.jar")
+            subprocess.run(f"java -jar .tmp/neoforge_installer.jar --installClient --installDir {dotminecraftpath}", shell=True, check=True)
+        except Exception as e:
+            print(f"Failed to install NeoForge: {e}")
+            return e
     return modLoaderJarPath
 
 # === LAUNCHER PROFILE MANAGEMENT ===
