@@ -36,7 +36,7 @@ def download(url, path):
 def mrpack2zip(filepath: str):
     root, extension = os.path.splitext(filepath)
     newfilename = root + '.zip'
-    os.rename(filepath, newfilename)
+    shutil.copyfile(filepath, newfilename)
     return newfilename
 import zipfile
 def extractzip(zippath: str):
@@ -50,7 +50,44 @@ def extractzip(zippath: str):
     except Exception as e:
         print(f"Something went wrong!: {e}")
         pass
-    
-
+def check_modloader(deps: dict):
+    result = {
+        'type': 'unknown',
+        'version': None,
+        'minecraft': deps.get('minecraft')
+    }
+    if deps.get('fabric-loader') is not None:
+        result['type'] = 'fabric'
+        result['version'] = deps.get('fabric-loader')
+    elif deps.get('forge') is not None:
+        result['type'] = 'forge'
+        result['version'] = deps.get('forge')
+    elif deps.get('quilt-loader') is not None:
+        result['type'] = 'quilt'
+        result['version'] = deps.get('quilt-loader')
+    elif deps.get('neoforge') is not None:
+        result['type'] = 'neoforge'
+        result['version'] = deps.get('neoforge')
+    return result
+# Import for download_modloader
+import pathlib
+import subprocess
+def download_modloader(meta: dict, dotminecraftpath: str):
+    if dotminecraftpath == "" or None: raise ValueError("installpath not provided")
+    modLoaderJarPath = None
+    if meta['type'] == 'fabric':
+        print("Fabric is not currently supported! Skipping modloader installation.")
+        download("https://maven.fabricmc.net/net/fabricmc/fabric-installer/1.1.0/fabric-installer-1.1.0.jar", ".tmp/fabric_installer.jar", )
+        try: 
+            subprocess.run(f"java -jar .tmp/fabric_installer.jar client -mcversion {meta['minecraft']} -loader {meta['version']} -dir {dotminecraftpath}")
+        except Exception as e:
+            return e
+    elif meta['type'] == 'forge':
+        print("Forge is not currently supported! Skipping modloader installation.")
+    elif meta['type'] == 'quilt-loader':
+        print("Quilt loader is not currently supported! Skipping modloader installation.")
+    elif meta['type'] == 'neoforge':
+        print("Neoforge is not currently supported! Skipping modloader installation.")
+    return modLoaderJarPath
 if __name__ == "__main__":
-    raise NotImplementedError("This file has no base functionality. To use, import this file.")
+    raise NotImplementedError("this is a library. you cant run it directly")

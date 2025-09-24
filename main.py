@@ -1,4 +1,4 @@
-from lib import download, mrpack2zip, extractzip, jsonparse
+from lib import download, mrpack2zip, extractzip, jsonparse, check_modloader
 import argparse
 import logging
 import shutil, os
@@ -9,7 +9,7 @@ from tqdm import tqdm
 # endregion
 logger = logging.getLogger(__name__)
 
-def unpack_mrpack(input_mrpack_path, dryrun: bool=False):
+def unpack_mrpack(input_mrpack_path, dryrun: bool=False, profiledir: str="Default"):
     """
     Unpacks a .mrpack file and downloads its dependencies.
     
@@ -62,9 +62,21 @@ def unpack_mrpack(input_mrpack_path, dryrun: bool=False):
         logger.critical(f"Unable to download files: {e}")
     if dryrun == True:
         print("Files have been unpacked to ./instance")
+        print("Cleaning up extra files...")
+        try:
+            shutil.rmtree('.tmp')
+            os.remove(zipfilepath)
+        except Exception as e:
+            print(f"Couldn't cleanup temp files! Error: {e}")
+            print(f"You may need to delete the .tmp folder and {zipfilepath}")
         print("Exiting due to dryrun being set.")
         exit(1)
+    ## Now it's the fun part! Installing the profile into the Minecraft launcher
+    deps = dict_obj["dependencies"]
+    modloader = check_modloader(deps)
     
+
+
 
 if __name__ == "__main__":
     argp = argparse.ArgumentParser(description="A simple terminal program to unpack a .mrpack file")
