@@ -375,7 +375,7 @@ def get_defaults(input_mrpack_path):
             os.remove(zipfilepath)
 
 if __name__ == "__main__":
-    argp = argparse.ArgumentParser(description="Ben's MrPack Unpacker - A complete solution for unpacking Minecraft modpacks")
+    argp = argparse.ArgumentParser(description="mrunpack")
     argp.add_argument("input_mrpack", help="Path to the mrpack file")
     argp.add_argument("-d", "--dryrun", action='store_true', help="Don't copy files, just unpack.")
     argp.add_argument("--get-defaults", action='store_true', help="Show default options for the mrpack file and exit")
